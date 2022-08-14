@@ -29,9 +29,9 @@ func (s *Server) Init() error {
 func (s *Server) RegisterRoute(r echo.RouteRegister) {
 
 	g := r.Group(`/webauthn`)
-	g.Get("/register/begin/:username", s.handleBeginRegistration).SetName(`webauthn.beginRegister`)
+	g.Post("/register/begin/:username", s.handleBeginRegistration).SetName(`webauthn.beginRegister`)
 	g.Post("/register/finish/:username", s.handleFinishRegistration).SetName(`webauthn.finishRegister`)
-	g.Get("/login/begin/:username", s.handleBeginLogin).SetName(`webauthn.beginLogin`)
+	g.Post("/login/begin/:username", s.handleBeginLogin).SetName(`webauthn.beginLogin`)
 	g.Post("/login/finish/:username", s.handleFinishLogin).SetName(`webauthn.finishLogin`)
 
 }
