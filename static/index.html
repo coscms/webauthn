@@ -19,7 +19,7 @@
   <button onclick="loginUser()">Login</button>
 
   <script>
-    var webAuthn = WebAuthn();
+    var webAuthn = new WebAuthn({debug:true});
     $(document).ready(function () {
       webAuthn.check();
     });

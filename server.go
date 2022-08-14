@@ -48,7 +48,7 @@ func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 	}
 
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
-		credCreationOpts.CredentialExcludeList = credentialExcludeList(ctx, s.user, user)
+		credCreationOpts.CredentialExcludeList = credentialExcludeList(ctx, user)
 	}
 
 	// generate PublicKeyCredentialCreationOptions, session data
@@ -88,7 +88,7 @@ func (s *Server) handleFinishRegistration(ctx echo.Context) error {
 		return err
 	}
 
-	err = s.user.AddCredential(ctx, user, credential)
+	err = s.user.Register(ctx, user, credential)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (s *Server) handleFinishLogin(ctx echo.Context) error {
 	}
 
 	// handle successful login
-	err = s.user.LoginSuccess(ctx, user, credential)
+	err = s.user.Login(ctx, user, credential)
 	if err != nil {
 		return err
 	}

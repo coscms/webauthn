@@ -11,15 +11,14 @@ import (
 
 type UserHandler interface {
 	GetUser(ctx echo.Context, username string, opType Type, stage Stage) (webauthn.User, error)
-	AddCredential(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
-	WebAuthnCredentials(ctx echo.Context, user webauthn.User) []webauthn.Credential
-	LoginSuccess(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
+	Register(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
+	Login(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
 }
 
-func credentialExcludeList(ctx echo.Context, u UserHandler, user webauthn.User) []protocol.CredentialDescriptor {
+func credentialExcludeList(ctx echo.Context, user webauthn.User) []protocol.CredentialDescriptor {
 
 	credentialExcludeList := []protocol.CredentialDescriptor{}
-	for _, cred := range u.WebAuthnCredentials(ctx, user) {
+	for _, cred := range user.WebAuthnCredentials() {
 		descriptor := protocol.CredentialDescriptor{
 			Type:         protocol.PublicKeyCredentialType,
 			CredentialID: cred.ID,

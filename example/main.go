@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"time"
 
@@ -9,17 +10,27 @@ import (
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/webx-top/echo"
 	"github.com/webx-top/echo/defaults"
+	"github.com/webx-top/echo/engine"
 	"github.com/webx-top/echo/engine/standard"
 	"github.com/webx-top/echo/handler/embed"
+	"github.com/webx-top/echo/middleware/session"
 )
+
+func init() {
+	gob.Register(&webauthn.SessionData{})
+}
 
 func main() {
 	w := cw.New(&webauthn.Config{
-		RPDisplayName: "Foobar Corp.",                                                 // Display Name for your site
-		RPID:          "localhost",                                                    // Generally the domain name for your site
-		RPOrigin:      "http://localhost",                                             // The origin URL for WebAuthn requests
-		RPIcon:        "https://www.coscms.com/public/assets/backend/images/logo.png", // Optional icon URL for your site
+		RPDisplayName: "Foobar Corp.",          // Display Name for your site
+		RPID:          "localhost",             // Generally the domain name for your site
+		RPOrigin:      "http://localhost:4444", // The origin URL for WebAuthn requests
+		RPIcon:        icon,                    // Optional icon URL for your site
 	}, &userHandle{})
+	if err := w.Init(); err != nil {
+		panic(err)
+	}
+	defaults.Use(session.Middleware(echo.DefaultSessionOptions))
 	w.RegisterRoute(defaults.Default)
 	fs := embed.NewFileSystems()
 	fs.Register(static.HTML)
@@ -28,17 +39,22 @@ func main() {
 		return c.Redirect(`/static/index.html`)
 	})
 	defaults.Get(`/static/*`, embed.File(fs))
-	defaults.Run(standard.New(`:4444`))
+	cfg := &engine.Config{
+		Address: `:4444`,
+	}
+	fmt.Println(`visit URL: http://localhost:4444/`)
+	defaults.Run(standard.NewWithConfig(cfg))
 }
 
-type userHandle struct {
-}
-
+var icon = "https://www.coscms.com/public/assets/backend/images/logo.png"
 var defaultUser = &user{
 	id:          100,
 	name:        `exampleUser@coscms.com`,
 	displayName: `exampleUser`,
-	icon:        `https://www.coscms.com/public/assets/backend/images/logo.png`,
+	icon:        icon,
+}
+
+type userHandle struct {
 }
 
 func (u *userHandle) GetUser(ctx echo.Context, username string, opType cw.Type, stage cw.Stage) (webauthn.User, error) {
@@ -48,15 +64,14 @@ func (u *userHandle) GetUser(ctx echo.Context, username string, opType cw.Type, 
 	}
 	return user, nil
 }
-func (u *userHandle) AddCredential(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
+
+func (u *userHandle) Register(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
 	defaultUser.credentials = append(defaultUser.credentials, *cred)
 	return nil
 }
-func (u *userHandle) WebAuthnCredentials(ctx echo.Context, user webauthn.User) []webauthn.Credential {
-	return user.WebAuthnCredentials()
-}
-func (u *userHandle) LoginSuccess(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
-	fmt.Println(`LoginSuccess:`, time.Now().Format(time.RFC3339))
+
+func (u *userHandle) Login(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
+	fmt.Println(`Login Success:`, time.Now().Format(time.RFC3339))
 	return nil
 }
 

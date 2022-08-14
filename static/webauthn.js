@@ -51,7 +51,7 @@ webAuthn.prototype.register = function(username) {
       },
       'json')
       .then((credentialCreationOptions) => {
-        debug && console.log(credentialCreationOptions);
+        $this.options.debug && console.log(credentialCreationOptions);
         credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
         credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
         if (credentialCreationOptions.publicKey.excludeCredentials) {
@@ -65,7 +65,7 @@ webAuthn.prototype.register = function(username) {
         })
       })
       .then((credential) => {
-        debug && console.log(credential);
+        $this.options.debug && console.log(credential);
         let attestationObject = credential.response.attestationObject;
         let clientDataJSON = credential.response.clientDataJSON;
         let rawId = credential.rawId;
@@ -87,7 +87,7 @@ webAuthn.prototype.register = function(username) {
           'json')
       })
       .then((success) => {
-        debug && alert("successfully registered " + username + "!");
+        $this.options.debug && alert("successfully registered " + username + "!");
         $this.options.onRegisterSuccess.call(this,arguments);
       })
       .catch((error) => {
@@ -112,7 +112,7 @@ webAuthn.prototype.login = function(username) {
       },
       'json')
       .then((credentialRequestOptions) => {
-        debug && console.log(credentialRequestOptions);
+        $this.options.debug && console.log(credentialRequestOptions);
         credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
         credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
           listItem.id = bufferDecode(listItem.id)
@@ -123,7 +123,7 @@ webAuthn.prototype.login = function(username) {
         })
       })
       .then((assertion) => {
-        debug && console.log(assertion);
+        $this.options.debug && console.log(assertion);
         let authData = assertion.response.authenticatorData;
         let clientDataJSON = assertion.response.clientDataJSON;
         let rawId = assertion.rawId;
@@ -149,7 +149,7 @@ webAuthn.prototype.login = function(username) {
           'json')
       })
       .then((success) => {
-        debug && alert("successfully logged in " + username + "!");
+        $this.options.debug && alert("successfully logged in " + username + "!");
         $this.options.onLoginSuccess.call(this,arguments);
       })
       .catch((error) => {
