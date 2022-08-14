@@ -21,7 +21,7 @@ function bufferEncode(value) {
         .replace(/=/g, "");
 }
 
-function webAuthn() {
+function webAuthn(options) {
     this.options = {
         urlPrefix: '/webauthn',
         debug:false,
@@ -32,6 +32,7 @@ function webAuthn() {
         onLoginSuccess: function(){},
         onLoginError: function(){},
     }
+    $.extend(this.options,options||{});
 }
 
 webAuthn.prototype.check = check;
