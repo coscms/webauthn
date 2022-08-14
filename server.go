@@ -1,10 +1,16 @@
 package webauthn
 
 import (
+	"encoding/gob"
+
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/webx-top/echo"
 )
+
+func init() {
+	gob.Register(&webauthn.SessionData{})
+}
 
 func New(cfg *webauthn.Config, user UserHandler) *Server {
 	a := &Server{

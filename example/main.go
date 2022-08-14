@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/gob"
 	"fmt"
 	"time"
 
@@ -15,10 +14,6 @@ import (
 	"github.com/webx-top/echo/handler/embed"
 	"github.com/webx-top/echo/middleware/session"
 )
-
-func init() {
-	gob.Register(&webauthn.SessionData{})
-}
 
 func main() {
 	w := cw.New(&webauthn.Config{
