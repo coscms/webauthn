@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>WebAuthn Demo</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+  <script src="./webauthn.js"></script>
+</head>
+
+<body>
+
+  Username:
+  <br>
+  <input type="text" name="username" id="email" placeholder="i.e. foo@bar.com">
+  <br>
+  <br>
+  <button onclick="registerUser()">Register</button>
+  <button onclick="loginUser()">Login</button>
+
+  <script>
+    var webAuthn = WebAuthn();
+    $(document).ready(function () {
+      webAuthn.check();
+    });
+
+
+    function registerUser() {
+      var username = $("#email").val()
+      webAuthn.register(username)
+    }
+
+    function loginUser() {
+      var username = $("#email").val()
+      webAuthn.login(username)
+    }
+
+  </script>
+</body>
+
+</html>
