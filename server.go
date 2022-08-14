@@ -141,13 +141,13 @@ func (s *Server) handleFinishLogin(ctx echo.Context) error {
 	// in an actual implementation, we should perform additional checks on
 	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
 	// and then increment the credentials counter
-	_, err = s.webAuthn.FinishLogin(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.webAuthn.FinishLogin(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
 
 	// handle successful login
-	err = s.user.LoginSuccess(ctx, user)
+	err = s.user.LoginSuccess(ctx, user, credential)
 	if err != nil {
 		return err
 	}
