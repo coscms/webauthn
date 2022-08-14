@@ -42,11 +42,11 @@ func main() {
 }
 
 var icon = "https://www.coscms.com/public/assets/backend/images/logo.png"
-var defaultUser = &user{
-	id:          100,
-	name:        `exampleUser@coscms.com`,
-	displayName: `exampleUser`,
-	icon:        icon,
+var defaultUser = &cw.User{
+	ID:          100,
+	Name:        `exampleUser@coscms.com`,
+	DisplayName: `exampleUser`,
+	Icon:        icon,
 }
 
 type userHandle struct {
@@ -54,51 +54,18 @@ type userHandle struct {
 
 func (u *userHandle) GetUser(ctx echo.Context, username string, opType cw.Type, stage cw.Stage) (webauthn.User, error) {
 	user := defaultUser
-	if username != user.name {
+	if username != user.Name {
 		return nil, fmt.Errorf("username mismatch")
 	}
 	return user, nil
 }
 
 func (u *userHandle) Register(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
-	defaultUser.credentials = append(defaultUser.credentials, *cred)
+	defaultUser.Credentials = append(defaultUser.Credentials, *cred)
 	return nil
 }
 
 func (u *userHandle) Login(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
 	fmt.Println(`Login Success:`, time.Now().Format(time.RFC3339))
 	return nil
-}
-
-type user struct {
-	id          uint64
-	name        string
-	displayName string
-	icon        string
-	credentials []webauthn.Credential
-}
-
-// User ID according to the Relying Party
-func (u *user) WebAuthnID() []byte {
-	return cw.WebAuthnID(u.id)
-}
-
-// User Name according to the Relying Party
-func (u *user) WebAuthnName() string {
-	return u.name
-}
-
-// Display Name of the user
-func (u *user) WebAuthnDisplayName() string {
-	return u.displayName
-}
-
-// User's icon url
-func (u *user) WebAuthnIcon() string {
-	return u.icon
-}
-
-// Credentials owned by the user
-func (u *user) WebAuthnCredentials() []webauthn.Credential {
-	return u.credentials
 }
