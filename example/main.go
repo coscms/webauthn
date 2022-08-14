@@ -16,13 +16,13 @@ import (
 )
 
 func main() {
-	w := cw.New(&webauthn.Config{
+	w := cw.New(&userHandle{})
+	if err := w.Init(&webauthn.Config{
 		RPDisplayName: "Foobar Corp.",          // Display Name for your site
 		RPID:          "localhost",             // Generally the domain name for your site
 		RPOrigin:      "http://localhost:4444", // The origin URL for WebAuthn requests
 		RPIcon:        icon,                    // Optional icon URL for your site
-	}, &userHandle{})
-	if err := w.Init(); err != nil {
+	}); err != nil {
 		panic(err)
 	}
 	defaults.Use(session.Middleware(echo.DefaultSessionOptions))

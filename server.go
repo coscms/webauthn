@@ -2,6 +2,7 @@ package webauthn
 
 import (
 	"encoding/gob"
+	"sync"
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
@@ -12,24 +13,32 @@ func init() {
 	gob.Register(&webauthn.SessionData{})
 }
 
-func New(cfg *webauthn.Config, user UserHandler) *Server {
+func New(user UserHandler) *Server {
 	a := &Server{
-		config: cfg,
-		user:   user,
+		user: user,
 	}
 	return a
 }
 
 type Server struct {
-	config   *webauthn.Config
 	webAuthn *webauthn.WebAuthn
 	user     UserHandler
+	lock     sync.RWMutex
 }
 
-func (s *Server) Init() error {
+func (s *Server) Init(cfg *webauthn.Config) error {
 	var err error
-	s.webAuthn, err = webauthn.New(s.config)
+	s.lock.Lock()
+	s.webAuthn, err = webauthn.New(cfg)
+	s.lock.Unlock()
 	return err
+}
+
+func (s *Server) Object() *webauthn.WebAuthn {
+	s.lock.RLock()
+	a := s.webAuthn
+	s.lock.RUnlock()
+	return a
 }
 
 func (s *Server) RegisterRoute(r echo.RouteRegister) {
@@ -58,7 +67,7 @@ func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 	}
 
 	// generate PublicKeyCredentialCreationOptions, session data
-	options, sessionData, err := s.webAuthn.BeginRegistration(
+	options, sessionData, err := s.Object().BeginRegistration(
 		user,
 		registerOptions,
 	)
@@ -89,7 +98,7 @@ func (s *Server) handleFinishRegistration(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	credential, err := s.webAuthn.FinishRegistration(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.Object().FinishRegistration(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
@@ -116,7 +125,7 @@ func (s *Server) handleBeginLogin(ctx echo.Context) error {
 	}
 
 	// generate PublicKeyCredentialRequestOptions, session data
-	options, sessionData, err := s.webAuthn.BeginLogin(user)
+	options, sessionData, err := s.Object().BeginLogin(user)
 	if err != nil {
 		return err
 	}
@@ -147,7 +156,7 @@ func (s *Server) handleFinishLogin(ctx echo.Context) error {
 	// in an actual implementation, we should perform additional checks on
 	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
 	// and then increment the credentials counter
-	credential, err := s.webAuthn.FinishLogin(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.Object().FinishLogin(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
