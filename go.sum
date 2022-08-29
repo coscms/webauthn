@@ -225,8 +225,8 @@ github.com/devigned/tab v0.1.1/go.mod h1:XG9mPq0dFghrYvoBF3xdRrJzSTX1b7IQrvaL9mz
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/dimchansky/utfbom v1.1.0/go.mod h1:rO41eb7gLfo8SF1jd9F8HplJm1Fewwi4mQvIirEdv+8=
-github.com/duo-labs/webauthn v0.0.0-20220330035159-03696f3d4499 h1:jaQHuGKk9NVcfu9VbA7ygslr/7utxdYs47i4osBhZP8=
-github.com/duo-labs/webauthn v0.0.0-20220330035159-03696f3d4499/go.mod h1:UMk1JMDgQDcdI2vQz+WJOIUTSjIq07qSepAVgc93rUc=
+github.com/duo-labs/webauthn v0.0.0-20220815211337-00c9fb5711f5 h1:BaeJtFDlto/NjX9t730OebRRJf2P+t9YEDz3ur18824=
+github.com/duo-labs/webauthn v0.0.0-20220815211337-00c9fb5711f5/go.mod h1:Jcj7rFNlTknb18v9jpSA58BveX2LDhXqaoy+6YV1N9g=
 github.com/dustin/go-humanize v0.0.0-20171111073723-bb3d318650d4/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=
 github.com/dustin/go-humanize v1.0.0 h1:VSnTsYCnlFHaM2/igO1h6X3HA71jcobQuxemgkq4zYo=
 github.com/dustin/go-humanize v1.0.0/go.mod h1:HtrtbFcZ19U5GC7JDqmcUSB87Iq5E25KnS6fMYU6eOk=

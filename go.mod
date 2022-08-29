@@ -3,7 +3,7 @@ module github.com/coscms/webauthn
 go 1.19
 
 require (
-	github.com/duo-labs/webauthn v0.0.0-20220330035159-03696f3d4499
+	github.com/duo-labs/webauthn v0.0.0-20220815211337-00c9fb5711f5
 	github.com/webx-top/echo v2.26.9+incompatible
 )
 
