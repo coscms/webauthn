@@ -1,42 +1,45 @@
-(function(){
-function check(){
+(function () {
+  function check() {
     // check whether current browser supports WebAuthn
     if (!window.PublicKeyCredential) {
-        alert("Error: this browser does not support WebAuthn");
-        return false;
+      alert("Error: this browser does not support WebAuthn");
+      return false;
     }
     return true
-}
+  }
 
-// Base64 to ArrayBuffer
-function bufferDecode(value) {
+  // Base64 to ArrayBuffer
+  function bufferDecode(value) {
     return Uint8Array.from(atob(value), c => c.charCodeAt(0));
-}
+  }
 
-// ArrayBuffer to URLBase64
-function bufferEncode(value) {
+  // ArrayBuffer to URLBase64
+  function bufferEncode(value) {
     return btoa(String.fromCharCode.apply(null, new Uint8Array(value)))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=/g, "");
-}
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=/g, "");
+  }
 
-function webAuthn(options) {
+  function webAuthn(options) {
     this.options = {
-        urlPrefix: '/webauthn',
-        debug:false,
-        getRegisterData: function(){return {}},
-        getLoginData: function(){return {}},
-        onRegisterSuccess: function(){},
-        onRegisterError: function(){},
-        onLoginSuccess: function(){},
-        onLoginError: function(){},
+      urlPrefix: '/webauthn',
+      debug: false,
+      getRegisterData: function () { return {} },
+      getLoginData: function () { return {} },
+      getUnbindData: function () { return {} },
+      onRegisterSuccess: function () { },
+      onRegisterError: function () { },
+      onLoginSuccess: function () { },
+      onLoginError: function () { },
+      onUnbindSuccess: function () { },
+      onUnbindError: function () { },
     }
-    $.extend(this.options,options||{});
-}
+    $.extend(this.options, options || {});
+  }
 
-webAuthn.prototype.check = check;
-webAuthn.prototype.register = function(username) {
+  webAuthn.prototype.check = check;
+  webAuthn.prototype.register = function (username) {
     if (username === "") {
       alert("Please enter a username");
       return;
@@ -44,7 +47,7 @@ webAuthn.prototype.register = function(username) {
     var $this = this;
 
     $.post(
-        $this.options.urlPrefix+'/register/begin/' + username,
+      $this.options.urlPrefix + '/register/begin/' + username,
       $this.options.getRegisterData(),
       function (data) {
         return data
@@ -71,7 +74,7 @@ webAuthn.prototype.register = function(username) {
         let rawId = credential.rawId;
 
         $.post(
-            $this.options.urlPrefix+'/register/finish/' + username,
+          $this.options.urlPrefix + '/register/finish/' + username,
           JSON.stringify({
             id: credential.id,
             rawId: bufferEncode(rawId),
@@ -88,16 +91,16 @@ webAuthn.prototype.register = function(username) {
       })
       .then((success) => {
         $this.options.debug && alert("successfully registered " + username + "!");
-        $this.options.onRegisterSuccess.call(this,arguments);
+        $this.options.onRegisterSuccess.call(this, arguments);
       })
       .catch((error) => {
         console.log(error);
         alert("failed to register " + username);
-        $this.options.onRegisterError.call(this,arguments);
+        $this.options.onRegisterError.call(this, arguments);
       })
   }
 
-webAuthn.prototype.login = function(username) {
+  webAuthn.prototype.auth = function (username, type) {
     if (username === "") {
       alert("Please enter a username");
       return;
@@ -105,8 +108,8 @@ webAuthn.prototype.login = function(username) {
     var $this = this;
 
     $.post(
-        $this.options.urlPrefix+'/login/begin/' + username,
-      $this.options.getLoginData(),
+      $this.options.urlPrefix + '/'+type+'/begin/' + username,
+      type=='login'?$this.options.getLoginData():$this.options.getUnbindData(),
       function (data) {
         return data
       },
@@ -131,7 +134,7 @@ webAuthn.prototype.login = function(username) {
         let userHandle = assertion.response.userHandle;
 
         $.post(
-            $this.options.urlPrefix+'/login/finish/' + username,
+          $this.options.urlPrefix + '/'+type+'/finish/' + username,
           JSON.stringify({
             id: assertion.id,
             rawId: bufferEncode(rawId),
@@ -149,14 +152,30 @@ webAuthn.prototype.login = function(username) {
           'json')
       })
       .then((success) => {
-        $this.options.debug && alert("successfully logged in " + username + "!");
-        $this.options.onLoginSuccess.call(this,arguments);
+        $this.options.debug && alert("successfully "+type+" " + username + "!");
+        if(type=='login'){
+          $this.options.onLoginSuccess.call(this, arguments);
+        }else{
+          $this.options.onUnbindSuccess.call(this, arguments);
+        }
       })
       .catch((error) => {
         console.log(error);
-        alert("failed to register " + username);
-        $this.options.onLoginError.call(this,arguments);
+        alert("failed to "+type+" " + username);
+        if(type=='login'){
+          $this.options.onLoginError.call(this, arguments);
+        }else{
+          $this.options.onUnbindError.call(this, arguments);
+        }
       })
+  }
+
+  webAuthn.prototype.login = function (username) {
+    this.auth(username,'login');
+  }
+
+  webAuthn.prototype.unbind = function (username) {
+    this.auth(username,'unbind');
   }
   window.WebAuthn = webAuthn;
 })();
