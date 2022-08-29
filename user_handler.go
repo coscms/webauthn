@@ -13,6 +13,7 @@ type UserHandler interface {
 	GetUser(ctx echo.Context, username string, opType Type, stage Stage) (webauthn.User, error)
 	Register(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
 	Login(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
+	Unbind(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
 }
 
 func credentialExcludeList(ctx echo.Context, user webauthn.User) []protocol.CredentialDescriptor {

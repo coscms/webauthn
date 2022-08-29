@@ -69,3 +69,8 @@ func (u *userHandle) Login(ctx echo.Context, user webauthn.User, cred *webauthn.
 	fmt.Println(`Login Success:`, time.Now().Format(time.RFC3339))
 	return nil
 }
+
+func (u *userHandle) Unbind(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
+	fmt.Println(`Unbind Success:`, time.Now().Format(time.RFC3339))
+	return nil
+}

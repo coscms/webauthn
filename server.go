@@ -48,8 +48,12 @@ func (s *Server) RegisterRoute(r echo.RouteRegister) {
 	g.Post("/register/finish/:username", s.handleFinishRegistration).SetName(`webauthn.finishRegister`)
 	g.Post("/login/begin/:username", s.handleBeginLogin).SetName(`webauthn.beginLogin`)
 	g.Post("/login/finish/:username", s.handleFinishLogin).SetName(`webauthn.finishLogin`)
+	g.Post("/unbind/begin/:username", s.handleBeginUnbind).SetName(`webauthn.beginUnbind`)
+	g.Post("/unbind/finish/:username", s.handleFinishUnbind).SetName(`webauthn.finishUnbind`)
 
 }
+
+// - register -
 
 func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 
@@ -113,6 +117,8 @@ func (s *Server) handleFinishRegistration(ctx echo.Context) error {
 	return ctx.JSON("Registration Success")
 }
 
+// - login -
+
 func (s *Server) handleBeginLogin(ctx echo.Context) error {
 
 	// get username
@@ -170,4 +176,65 @@ func (s *Server) handleFinishLogin(ctx echo.Context) error {
 	ctx.Session().Delete(sessionKeyLogin)
 
 	return ctx.JSON("Login Success")
+}
+
+// - unbind -
+
+func (s *Server) handleBeginUnbind(ctx echo.Context) error {
+
+	// get username
+	username := ctx.Param("username")
+
+	// get user
+	user, err := s.user.GetUser(ctx, username, TypeUnbind, StageBegin)
+	if err != nil {
+		return err
+	}
+
+	// generate PublicKeyCredentialRequestOptions, session data
+	options, sessionData, err := s.Object().BeginLogin(user)
+	if err != nil {
+		return err
+	}
+
+	// store session data as marshaled JSON
+	ctx.Session().Set(sessionKeyUnbind, sessionData)
+
+	return ctx.JSON(options)
+}
+
+func (s *Server) handleFinishUnbind(ctx echo.Context) error {
+
+	// get username
+	username := ctx.Param("username")
+
+	// get user
+	user, err := s.user.GetUser(ctx, username, TypeUnbind, StageFinish)
+	if err != nil {
+		return err
+	}
+
+	// load the session data
+	sessionData, ok := ctx.Session().Get(sessionKeyUnbind).(*webauthn.SessionData)
+	if !ok {
+		return echo.ErrBadRequest
+	}
+
+	// in an actual implementation, we should perform additional checks on
+	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
+	// and then increment the credentials counter
+	credential, err := s.Object().FinishLogin(user, *sessionData, ctx.Request().StdRequest())
+	if err != nil {
+		return err
+	}
+
+	// handle successful unbind
+	err = s.user.Unbind(ctx, user, credential)
+	if err != nil {
+		return err
+	}
+
+	ctx.Session().Delete(sessionKeyUnbind)
+
+	return ctx.JSON("Unbind Success")
 }

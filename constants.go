@@ -4,8 +4,9 @@ type Type int
 type Stage int
 
 const (
-	TypeLogin Type = iota + 1
-	TypeRegister
+	TypeRegister Type = iota + 1
+	TypeLogin
+	TypeUnbind
 )
 
 const (
@@ -16,4 +17,5 @@ const (
 const (
 	sessionKeyRegister = `webauthn.registration`
 	sessionKeyLogin    = `webauthn.authentication`
+	sessionKeyUnbind   = `webauthn.unbind`
 )
