@@ -8,6 +8,10 @@
     return true
   }
 
+  function isSupported() {
+    return typeof(window.PublicKeyCredential)!='undefined';
+  }
+
   // Base64 to ArrayBuffer
   function bufferDecode(value) {
     return Uint8Array.from(atob(value), c => c.charCodeAt(0));
@@ -40,6 +44,7 @@
   }
 
   webAuthn.prototype.check = check;
+  webAuthn.prototype.isSupported = isSupported();
   webAuthn.prototype.register = function (username) {
     if (username === "") {
       alert("Please enter a username");
