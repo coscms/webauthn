@@ -3,6 +3,7 @@ module github.com/coscms/webauthn
 go 1.19
 
 require (
+	github.com/admpub/log v1.3.2
 	github.com/duo-labs/webauthn v0.0.0-20220815211337-00c9fb5711f5
 	github.com/webx-top/echo v2.26.9+incompatible
 )
@@ -18,7 +19,6 @@ require (
 	github.com/admpub/go-isatty v0.0.10 // indirect
 	github.com/admpub/go-reuseport v0.0.4 // indirect
 	github.com/admpub/humanize v0.0.0-20190501023926-5f826e92c8ca // indirect
-	github.com/admpub/log v1.3.2 // indirect
 	github.com/admpub/realip v0.0.0-20210421084339-374cf5df122d // indirect
 	github.com/admpub/securecookie v1.1.2 // indirect
 	github.com/admpub/sessions v0.1.3 // indirect

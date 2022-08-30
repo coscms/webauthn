@@ -17,6 +17,7 @@
   <br>
   <button onclick="registerUser()">Register</button>
   <button onclick="loginUser()">Login</button>
+  <button onclick="unbindUser()">Unbind</button>
 
   <script>
     var webAuthn = new WebAuthn({debug:true});
@@ -33,6 +34,11 @@
     function loginUser() {
       var username = $("#email").val()
       webAuthn.login(username)
+    }
+
+    function unbindUser() {
+      var username = $("#email").val()
+      webAuthn.unbind(username)
     }
 
   </script>

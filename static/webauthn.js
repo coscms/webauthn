@@ -22,18 +22,19 @@
   }
 
   function webAuthn(options) {
+    var $this = this;
     this.options = {
       urlPrefix: '/webauthn',
       debug: false,
       getRegisterData: function () { return {} },
       getLoginData: function () { return {} },
       getUnbindData: function () { return {} },
-      onRegisterSuccess: function () { },
-      onRegisterError: function () { },
-      onLoginSuccess: function () { },
-      onLoginError: function () { },
-      onUnbindSuccess: function () { },
-      onUnbindError: function () { },
+      onRegisterSuccess: function (response) {$this.options.debug && console.log(response)},
+      onRegisterError: function (error) {$this.options.debug && console.error(error)},
+      onLoginSuccess: function (response) {$this.options.debug && console.log(response)},
+      onLoginError: function (error) {$this.options.debug && console.error(error)},
+      onUnbindSuccess: function (response) {$this.options.debug && console.log(response)},
+      onUnbindError: function (error) {$this.options.debug && console.error(error)},
     }
     $.extend(this.options, options || {});
   }
@@ -91,12 +92,12 @@
       })
       .then((success) => {
         $this.options.debug && alert("successfully registered " + username + "!");
-        $this.options.onRegisterSuccess.call(this, arguments);
+        $this.options.onRegisterSuccess.apply(this, arguments);
       })
       .catch((error) => {
         console.log(error);
         alert("failed to register " + username);
-        $this.options.onRegisterError.call(this, arguments);
+        $this.options.onRegisterError.apply(this, arguments);
       })
   }
 
@@ -154,18 +155,18 @@
       .then((success) => {
         $this.options.debug && alert("successfully "+type+" " + username + "!");
         if(type=='login'){
-          $this.options.onLoginSuccess.call(this, arguments);
+          $this.options.onLoginSuccess.apply(this, arguments);
         }else{
-          $this.options.onUnbindSuccess.call(this, arguments);
+          $this.options.onUnbindSuccess.apply(this, arguments);
         }
       })
       .catch((error) => {
         console.log(error);
         alert("failed to "+type+" " + username);
         if(type=='login'){
-          $this.options.onLoginError.call(this, arguments);
+          $this.options.onLoginError.apply(this, arguments);
         }else{
-          $this.options.onUnbindError.call(this, arguments);
+          $this.options.onUnbindError.apply(this, arguments);
         }
       })
   }

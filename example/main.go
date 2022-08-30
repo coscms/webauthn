@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 
+	"github.com/admpub/log"
 	cw "github.com/coscms/webauthn"
 	"github.com/coscms/webauthn/static"
 	"github.com/duo-labs/webauthn/webauthn"
@@ -62,15 +62,24 @@ func (u *userHandle) GetUser(ctx echo.Context, username string, opType cw.Type, 
 
 func (u *userHandle) Register(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
 	defaultUser.Credentials = append(defaultUser.Credentials, *cred)
+	log.Info(`Register Success:`, echo.Dump(cred, false))
 	return nil
 }
 
 func (u *userHandle) Login(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
-	fmt.Println(`Login Success:`, time.Now().Format(time.RFC3339))
+	log.Info(`Login Success:`, echo.Dump(cred, false))
 	return nil
 }
 
 func (u *userHandle) Unbind(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error {
-	fmt.Println(`Unbind Success:`, time.Now().Format(time.RFC3339))
+	oldCreds := defaultUser.Credentials
+	defaultUser.Credentials = []webauthn.Credential{}
+	for _, old := range oldCreds {
+		if string(old.ID) == string(cred.ID) {
+			continue
+		}
+		defaultUser.Credentials = append(defaultUser.Credentials, old)
+	}
+	log.Info(`Unbind Success:`, echo.Dump(cred, false))
 	return nil
 }
