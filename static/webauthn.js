@@ -57,8 +57,7 @@
       $this.options.getRegisterData(),
       function (data) {
         return data
-      },
-      'json')
+      },'json')
       .then((credentialCreationOptions) => {
         $this.options.debug && console.log(credentialCreationOptions);
         credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
@@ -92,8 +91,7 @@
           }),
           function (data) {
             return data
-          },
-          'json')
+          },'json')
       })
       .then((success) => {
         $this.options.debug && alert("successfully registered " + username + "!");
@@ -118,8 +116,7 @@
       type=='login'?$this.options.getLoginData():$this.options.getUnbindData(),
       function (data) {
         return data
-      },
-      'json')
+      },'json')
       .then((credentialRequestOptions) => {
         $this.options.debug && console.log(credentialRequestOptions);
         credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
@@ -154,8 +151,7 @@
           }),
           function (data) {
             return data
-          },
-          'json')
+          },'json')
       })
       .then((success) => {
         $this.options.debug && alert("successfully "+type+" " + username + "!");
