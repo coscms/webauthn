@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"sync"
 
+	"github.com/admpub/log"
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
 	"github.com/webx-top/echo"
@@ -13,15 +14,20 @@ func init() {
 	gob.Register(&webauthn.SessionData{})
 }
 
-func New(user UserHandler) *Server {
+func New(user UserHandler, lazyInit ...func(echo.Context) *webauthn.Config) *Server {
 	a := &Server{
 		user: user,
+	}
+	if len(lazyInit) > 0 {
+		a.lazyInit = lazyInit[0]
 	}
 	return a
 }
 
 type Server struct {
 	webAuthn *webauthn.WebAuthn
+	lazyInit func(echo.Context) *webauthn.Config
+	onceInit sync.Once
 	user     UserHandler
 	lock     sync.RWMutex
 }
@@ -34,10 +40,21 @@ func (s *Server) Init(cfg *webauthn.Config) error {
 	return err
 }
 
-func (s *Server) Object() *webauthn.WebAuthn {
+func (s *Server) Object(ctx echo.Context) *webauthn.WebAuthn {
 	s.lock.RLock()
 	a := s.webAuthn
 	s.lock.RUnlock()
+	if a == nil && s.lazyInit != nil {
+		s.onceInit.Do(func() {
+			cfg := s.lazyInit(ctx)
+			err := s.Init(cfg)
+			if err != nil {
+				log.Error(err)
+				return
+			}
+			a = s.webAuthn
+		})
+	}
 	return a
 }
 
@@ -71,7 +88,7 @@ func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 	}
 
 	// generate PublicKeyCredentialCreationOptions, session data
-	options, sessionData, err := s.Object().BeginRegistration(
+	options, sessionData, err := s.Object(ctx).BeginRegistration(
 		user,
 		registerOptions,
 	)
@@ -102,7 +119,7 @@ func (s *Server) handleFinishRegistration(ctx echo.Context) error {
 		return echo.ErrBadRequest
 	}
 
-	credential, err := s.Object().FinishRegistration(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.Object(ctx).FinishRegistration(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
@@ -131,7 +148,7 @@ func (s *Server) handleBeginLogin(ctx echo.Context) error {
 	}
 
 	// generate PublicKeyCredentialRequestOptions, session data
-	options, sessionData, err := s.Object().BeginLogin(user)
+	options, sessionData, err := s.Object(ctx).BeginLogin(user)
 	if err != nil {
 		return err
 	}
@@ -162,7 +179,7 @@ func (s *Server) handleFinishLogin(ctx echo.Context) error {
 	// in an actual implementation, we should perform additional checks on
 	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
 	// and then increment the credentials counter
-	credential, err := s.Object().FinishLogin(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.Object(ctx).FinishLogin(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
@@ -192,7 +209,7 @@ func (s *Server) handleBeginUnbind(ctx echo.Context) error {
 	}
 
 	// generate PublicKeyCredentialRequestOptions, session data
-	options, sessionData, err := s.Object().BeginLogin(user)
+	options, sessionData, err := s.Object(ctx).BeginLogin(user)
 	if err != nil {
 		return err
 	}
@@ -223,7 +240,7 @@ func (s *Server) handleFinishUnbind(ctx echo.Context) error {
 	// in an actual implementation, we should perform additional checks on
 	// the returned 'credential', i.e. check 'credential.Authenticator.CloneWarning'
 	// and then increment the credentials counter
-	credential, err := s.Object().FinishLogin(user, *sessionData, ctx.Request().StdRequest())
+	credential, err := s.Object(ctx).FinishLogin(user, *sessionData, ctx.Request().StdRequest())
 	if err != nil {
 		return err
 	}
