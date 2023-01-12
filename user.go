@@ -1,6 +1,6 @@
 package webauthn
 
-import "github.com/duo-labs/webauthn/webauthn"
+import "github.com/go-webauthn/webauthn/webauthn"
 
 var _ webauthn.User = &User{}
 

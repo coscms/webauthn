@@ -6,7 +6,7 @@ import (
 	"github.com/admpub/log"
 	cw "github.com/coscms/webauthn"
 	"github.com/coscms/webauthn/static"
-	"github.com/duo-labs/webauthn/webauthn"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/webx-top/echo"
 	"github.com/webx-top/echo/defaults"
 	"github.com/webx-top/echo/engine"

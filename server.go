@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/admpub/log"
-	"github.com/duo-labs/webauthn/protocol"
-	"github.com/duo-labs/webauthn/webauthn"
+	"github.com/go-webauthn/webauthn/protocol"
+	"github.com/go-webauthn/webauthn/webauthn"
 	"github.com/webx-top/echo"
 )
 
