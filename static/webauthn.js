@@ -14,7 +14,12 @@
 
   // Base64 to ArrayBuffer
   function bufferDecode(value) {
-    return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    try {
+      value = String(value).replace(/_/g,'/').replace(/-/g,'+');
+      return Uint8Array.from(atob(value), c => c.charCodeAt(0));
+    } catch (error) {
+      console.error(error+": "+value);
+    }
   }
 
   // ArrayBuffer to URLBase64
