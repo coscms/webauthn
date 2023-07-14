@@ -99,7 +99,7 @@
       })
       .catch((error) => {
         console.log(error);
-        alert("failed to register " + username);
+        alert("failed to register " + username+": "+error);
         $this.options.onRegisterError.apply(this, arguments);
       })
   }
