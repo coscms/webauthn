@@ -44,6 +44,48 @@
       onLoginError: function (error) {$this.options.debug && console.error(error)},
       onUnbindSuccess: function (response) {$this.options.debug && console.log(response)},
       onUnbindError: function (error) {$this.options.debug && console.error(error)},
+      checkResponseBeginLogin: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
+      checkResponseFinishLogin: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
+      checkResponseBeginRegister: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
+      checkResponseFinishRegister: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
+      checkResponseBeginUnbind: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
+      checkResponseFinishUnbind: function(data) {
+        if(typeof data.Code != 'undefined'){
+          App.message({'text':data.Info,'type':data.Code==1?'success':'error'});
+          return false;
+        }
+        return true;
+      },
     }
     $.extend(this.options, options || {});
   }
@@ -60,9 +102,15 @@
     $.post(
       $this.options.urlPrefix + '/register/begin/' + username,
       $this.options.getRegisterData(),
-      function (data) { return data },'json')
+      function (data) {
+        if(!$this.options.checkResponseBeginRegister(data)) return null;
+        return data;
+      },'json')
       .then((credentialCreationOptions) => {
         $this.options.debug && console.log(credentialCreationOptions);
+        if(!credentialCreationOptions || typeof credentialCreationOptions.publicKey == 'undefined'){
+          return;
+        }
         credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
         credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
         if (credentialCreationOptions.publicKey.excludeCredentials) {
@@ -77,6 +125,9 @@
       })
       .then((credential) => {
         $this.options.debug && console.log(credential);
+        if(!credential || typeof credential.response == 'undefined'){
+          return;
+        }
         let attestationObject = credential.response.attestationObject;
         let clientDataJSON = credential.response.clientDataJSON;
         let rawId = credential.rawId;
@@ -92,7 +143,10 @@
               clientDataJSON: bufferEncode(clientDataJSON),
             },
           }),
-          function (data) { return data },'json')
+          function (data) {
+            if(!$this.options.checkResponseFinishRegister(data)) return null;
+            return data;
+          }, 'json');
       })
       .then((_) => {
         $this.options.debug && alert("successfully registered " + username + "!");
@@ -114,9 +168,19 @@
     $.post(
       $this.options.urlPrefix + '/'+type+'/begin/' + username,
       type=='login'?$this.options.getLoginData():$this.options.getUnbindData(),
-      function (data) { return data },'json')
+      function (data) {
+        if(type=='login'){
+          if(!$this.options.checkResponseBeginLogin(data)) return null;
+        }else{
+          if(!$this.options.checkResponseBeginUnbind(data)) return null;
+        }
+        return data;
+      },'json')
       .then((credentialRequestOptions) => {
         $this.options.debug && console.log(credentialRequestOptions);
+        if(!credentialRequestOptions || typeof credentialRequestOptions.publicKey == 'undefined'){
+          return;
+        }
         credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
         credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
           listItem.id = bufferDecode(listItem.id)
@@ -128,6 +192,9 @@
       })
       .then((assertion) => {
         $this.options.debug && console.log(assertion);
+        if(!assertion || typeof assertion.response == 'undefined'){
+          return;
+        }
         let authData = assertion.response.authenticatorData;
         let clientDataJSON = assertion.response.clientDataJSON;
         let rawId = assertion.rawId;
@@ -147,7 +214,14 @@
               userHandle: bufferEncode(userHandle),
             },
           }),
-          function (data) { return data },'json')
+          function (data) {
+            if(type=='login'){
+              if(!$this.options.checkResponseFinishLogin(data)) return null;
+            }else{
+              if(!$this.options.checkResponseFinishUnbind(data)) return null;
+            }
+            return data;
+          }, 'json');
       })
       .then((_) => {
         $this.options.debug && alert("successfully "+type+" " + username + "!");
