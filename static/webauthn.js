@@ -94,13 +94,12 @@
           }),
           function (data) { return data },'json')
       })
-      .then((success) => {
+      .then((_) => {
         $this.options.debug && alert("successfully registered " + username + "!");
         $this.options.onRegisterSuccess.apply(this, arguments);
       })
       .catch((error) => {
-        console.log(error);
-        alert("failed to register " + username+": "+error);
+        console.log("failed to register " + username + ": " + error);
         $this.options.onRegisterError.apply(this, arguments);
       })
   }
@@ -115,9 +114,7 @@
     $.post(
       $this.options.urlPrefix + '/'+type+'/begin/' + username,
       type=='login'?$this.options.getLoginData():$this.options.getUnbindData(),
-      function (data) {
-        return data
-      },'json')
+      function (data) { return data },'json')
       .then((credentialRequestOptions) => {
         $this.options.debug && console.log(credentialRequestOptions);
         credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
@@ -150,11 +147,9 @@
               userHandle: bufferEncode(userHandle),
             },
           }),
-          function (data) {
-            return data
-          },'json')
+          function (data) { return data },'json')
       })
-      .then((success) => {
+      .then((_) => {
         $this.options.debug && alert("successfully "+type+" " + username + "!");
         if(type=='login'){
           $this.options.onLoginSuccess.apply(this, arguments);
@@ -163,8 +158,7 @@
         }
       })
       .catch((error) => {
-        console.log(error);
-        alert("failed to "+type+" " + username);
+        console.log("failed to "+type+" " + username + ": " +error);
         if(type=='login'){
           $this.options.onLoginError.apply(this, arguments);
         }else{
