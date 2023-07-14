@@ -55,9 +55,7 @@
     $.post(
       $this.options.urlPrefix + '/register/begin/' + username,
       $this.options.getRegisterData(),
-      function (data) {
-        return data
-      },'json')
+      function (data) { return data },'json')
       .then((credentialCreationOptions) => {
         $this.options.debug && console.log(credentialCreationOptions);
         credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
@@ -89,9 +87,7 @@
               clientDataJSON: bufferEncode(clientDataJSON),
             },
           }),
-          function (data) {
-            return data
-          },'json')
+          function (data) { return data },'json')
       })
       .then((success) => {
         $this.options.debug && alert("successfully registered " + username + "!");
