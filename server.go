@@ -70,6 +70,12 @@ func (s *Server) RegisterRoute(r echo.RouteRegister) {
 
 }
 
+func (s *Server) RegisterRouteForLogin(r echo.RouteRegister) {
+	g := r.Group(`/webauthn`)
+	g.Post("/login/begin/:username", s.handleBeginLogin).SetName(`webauthn.beginLogin`)
+	g.Post("/login/finish/:username", s.handleFinishLogin).SetName(`webauthn.finishLogin`)
+}
+
 // - register -
 
 func (s *Server) handleBeginRegistration(ctx echo.Context) error {
