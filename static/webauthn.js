@@ -44,24 +44,12 @@
       onLoginError: function (error) {$this.options.debug && console.error(error)},
       onUnbindSuccess: function (response) {$this.options.debug && console.log(response)},
       onUnbindError: function (error) {$this.options.debug && console.error(error)},
-      checkResponseBeginLogin: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
-      checkResponseFinishLogin: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
-      checkResponseBeginRegister: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
-      checkResponseFinishRegister: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
-      checkResponseBeginUnbind: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
-      checkResponseFinishUnbind: function(data) {
-        if(typeof data.Code != 'undefined') throw data;
-      },
+      checkResponseBeginLogin: function(data) {return data},
+      checkResponseFinishLogin: function(data) {return data},
+      checkResponseBeginRegister: function(data) {return data},
+      checkResponseFinishRegister: function(data) {return data},
+      checkResponseBeginUnbind: function(data) {return data},
+      checkResponseFinishUnbind: function(data) {return data},
     }
     $.extend(this.options, options || {});
   }
@@ -79,11 +67,14 @@
       $this.options.urlPrefix + '/register/begin/' + username,
       $this.options.getRegisterData(),
       function (data) {
-        $this.options.checkResponseBeginRegister(data);
+        data = $this.options.checkResponseBeginRegister(data);
         return data;
       },'json')
       .then((credentialCreationOptions) => {
         $this.options.debug && console.log(credentialCreationOptions);
+
+        if(typeof credentialCreationOptions.Code != 'undefined') throw new Error(credentialCreationOptions.Info);
+        
         credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
         credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
         if (credentialCreationOptions.publicKey.excludeCredentials) {
@@ -102,9 +93,12 @@
         let clientDataJSON = credential.response.clientDataJSON;
         let rawId = credential.rawId;
 
-        $.post(
-          $this.options.urlPrefix + '/register/finish/' + username,
-          JSON.stringify({
+        $.ajax({
+          type:'post',
+          url:$this.options.urlPrefix + '/register/finish/' + username,
+          dataType:'json',
+          async:false,
+          data:JSON.stringify({
             id: credential.id,
             rawId: bufferEncode(rawId),
             type: credential.type,
@@ -113,18 +107,18 @@
               clientDataJSON: bufferEncode(clientDataJSON),
             },
           }),
-          function (data) {
-            $this.options.checkResponseFinishRegister(data);
+          success:function (data) {
+            data = $this.options.checkResponseFinishRegister(data);
             return data;
-          }, 'json');
+          }});
       })
-      .then((_) => {
+      .then((response) => {
         $this.options.debug && alert("successfully registered " + username + "!");
-        $this.options.onRegisterSuccess.apply(this, arguments);
+        $this.options.onRegisterSuccess.call(this, response);
       })
       .catch((error) => {
         console.log("failed to register " + username + ": " + error);
-        $this.options.onRegisterError.apply(this, arguments);
+        $this.options.onRegisterError.call(this, error);
       })
   }
 
@@ -140,14 +134,17 @@
       type=='login'?$this.options.getLoginData():$this.options.getUnbindData(),
       function (data) {
         if(type=='login'){
-          $this.options.checkResponseBeginLogin(data);
+          data = $this.options.checkResponseBeginLogin(data);
         }else{
-          $this.options.checkResponseBeginUnbind(data);
+          data = $this.options.checkResponseBeginUnbind(data);
         }
         return data;
       },'json')
       .then((credentialRequestOptions) => {
         $this.options.debug && console.log(credentialRequestOptions);
+
+        if(typeof credentialRequestOptions.Code != 'undefined') throw new Error(credentialRequestOptions.Info);
+
         credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
         credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
           listItem.id = bufferDecode(listItem.id)
@@ -165,9 +162,12 @@
         let sig = assertion.response.signature;
         let userHandle = assertion.response.userHandle;
 
-        $.post(
-          $this.options.urlPrefix + '/'+type+'/finish/' + username,
-          JSON.stringify({
+        $.ajax({
+          type:'post',
+          url:$this.options.urlPrefix + '/'+type+'/finish/' + username,
+          dataType: 'json',
+          async: false,
+          data:JSON.stringify({
             id: assertion.id,
             rawId: bufferEncode(rawId),
             type: assertion.type,
@@ -178,29 +178,29 @@
               userHandle: bufferEncode(userHandle),
             },
           }),
-          function (data) {
+          success:function (data) {
             if(type=='login'){
-              $this.options.checkResponseFinishLogin(data);
+              data = $this.options.checkResponseFinishLogin(data);
             }else{
-              $this.options.checkResponseFinishUnbind(data);
+              data = $this.options.checkResponseFinishUnbind(data);
             }
             return data;
-          }, 'json');
+          }});
       })
-      .then((_) => {
+      .then((response) => {
         $this.options.debug && alert("successfully "+type+" " + username + "!");
         if(type=='login'){
-          $this.options.onLoginSuccess.apply(this, arguments);
+          $this.options.onLoginSuccess.call(this, response);
         }else{
-          $this.options.onUnbindSuccess.apply(this, arguments);
+          $this.options.onUnbindSuccess.call(this, response);
         }
       })
       .catch((error) => {
         console.log("failed to "+type+" " + username + ": " +error);
         if(type=='login'){
-          $this.options.onLoginError.apply(this, arguments);
+          $this.options.onLoginError.call(this, error);
         }else{
-          $this.options.onUnbindError.apply(this, arguments);
+          $this.options.onUnbindError.call(this, error);
         }
       })
   }
