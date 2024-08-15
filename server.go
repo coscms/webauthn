@@ -35,6 +35,7 @@ type Server struct {
 func (s *Server) Init(cfg *webauthn.Config) error {
 	var err error
 	s.lock.Lock()
+	SetConfigDefaults(cfg)
 	s.webAuthn, err = webauthn.New(cfg)
 	s.lock.Unlock()
 	return err
@@ -90,7 +91,7 @@ func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 	}
 
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
-		credCreationOpts.CredentialExcludeList = credentialExcludeList(ctx, user)
+		credCreationOpts.CredentialExcludeList = makeCredentialDescriptorList(ctx, user)
 	}
 
 	// generate PublicKeyCredentialCreationOptions, session data
@@ -153,8 +154,12 @@ func (s *Server) handleBeginLogin(ctx echo.Context) error {
 		return err
 	}
 
+	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) {
+		credCreationOpts.AllowedCredentials = makeCredentialDescriptorList(ctx, user)
+	}
+
 	// generate PublicKeyCredentialRequestOptions, session data
-	options, sessionData, err := s.Object(ctx).BeginLogin(user)
+	options, sessionData, err := s.Object(ctx).BeginLogin(user, loginOptions)
 	if err != nil {
 		return err
 	}
@@ -214,8 +219,12 @@ func (s *Server) handleBeginUnbind(ctx echo.Context) error {
 		return err
 	}
 
+	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) {
+		credCreationOpts.AllowedCredentials = makeCredentialDescriptorList(ctx, user)
+	}
+
 	// generate PublicKeyCredentialRequestOptions, session data
-	options, sessionData, err := s.Object(ctx).BeginLogin(user)
+	options, sessionData, err := s.Object(ctx).BeginLogin(user, loginOptions)
 	if err != nil {
 		return err
 	}

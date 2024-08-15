@@ -16,18 +16,26 @@ type UserHandler interface {
 	Unbind(ctx echo.Context, user webauthn.User, cred *webauthn.Credential) error
 }
 
-func credentialExcludeList(ctx echo.Context, user webauthn.User) []protocol.CredentialDescriptor {
-
-	credentialExcludeList := []protocol.CredentialDescriptor{}
-	for _, cred := range user.WebAuthnCredentials() {
+func makeCredentialDescriptorList(_ echo.Context, user webauthn.User) []protocol.CredentialDescriptor {
+	list := user.WebAuthnCredentials()
+	credentialDescList := make([]protocol.CredentialDescriptor, 0, len(list))
+	for _, cred := range list {
 		descriptor := protocol.CredentialDescriptor{
 			Type:         protocol.PublicKeyCredentialType,
 			CredentialID: cred.ID,
 		}
-		credentialExcludeList = append(credentialExcludeList, descriptor)
+		credentialDescList = append(credentialDescList, descriptor)
 	}
+	return credentialDescList
+}
 
-	return credentialExcludeList
+func SetConfigDefaults(c *webauthn.Config) {
+	if len(c.AuthenticatorSelection.UserVerification) == 0 {
+		c.AuthenticatorSelection.UserVerification = protocol.VerificationDiscouraged // 登录时不用输入pin码
+	}
+	if len(c.AttestationPreference) == 0 {
+		c.AttestationPreference = protocol.PreferDirectAttestation
+	}
 }
 
 func WebAuthnID(uid uint64) []byte {

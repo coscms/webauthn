@@ -18,10 +18,9 @@ import (
 func main() {
 	w := cw.New(&userHandle{})
 	if err := w.Init(&webauthn.Config{
-		RPDisplayName: "Foobar Corp.",          // Display Name for your site
-		RPID:          "localhost",             // Generally the domain name for your site
-		RPOrigin:      "http://localhost:4444", // The origin URL for WebAuthn requests
-		RPIcon:        icon,                    // Optional icon URL for your site
+		RPDisplayName: "Foobar Corp.",                    // Display Name for your site
+		RPID:          "localhost",                       // Generally the domain name for your site
+		RPOrigins:     []string{"http://localhost:4444"}, // The origin URL for WebAuthn requests
 	}); err != nil {
 		panic(err)
 	}
