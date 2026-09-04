@@ -90,8 +90,9 @@ func (s *Server) handleBeginRegistration(ctx echo.Context) error {
 		return err
 	}
 
-	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
+	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) error {
 		credCreationOpts.CredentialExcludeList = makeCredentialDescriptorList(ctx, user)
+		return nil
 	}
 
 	// generate PublicKeyCredentialCreationOptions, session data
@@ -154,8 +155,9 @@ func (s *Server) handleBeginLogin(ctx echo.Context) error {
 		return err
 	}
 
-	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) {
+	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) error {
 		credCreationOpts.AllowedCredentials = makeCredentialDescriptorList(ctx, user)
+		return nil
 	}
 
 	// generate PublicKeyCredentialRequestOptions, session data
@@ -219,8 +221,9 @@ func (s *Server) handleBeginUnbind(ctx echo.Context) error {
 		return err
 	}
 
-	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) {
+	loginOptions := func(credCreationOpts *protocol.PublicKeyCredentialRequestOptions) error {
 		credCreationOpts.AllowedCredentials = makeCredentialDescriptorList(ctx, user)
+		return nil
 	}
 
 	// generate PublicKeyCredentialRequestOptions, session data
